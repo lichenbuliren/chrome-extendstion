@@ -19,7 +19,7 @@ function init() {
     });
 }
 
-setInterval(init, 0);
+// setInterval(init, 0);
 
 // post message to tab
 function postMessage(action, address) {
@@ -36,3 +36,8 @@ function postMessage(action, address) {
         });
     });
 }
+
+// 
+chrome.browserAction.onClicked.addListener(function (tab) {
+    init();
+});
