@@ -1,4 +1,5 @@
-var storage = chrome.storage.local;
+var storage = chrome.storage.local,
+    screenshot = {};
 
 // page init
 chrome.runtime.onConnect.addListener(function (port) {
@@ -15,14 +16,28 @@ function init() {
     var address = storage.get({
         'address': ''
     }, function (data) {
-        postMessage('append', data.address);
+        postMessage({
+            action: 'append',
+            address: data.address
+        });
     });
 }
 
-// setInterval(init, 0);
+// 截图函数
+function capture(callback) {
+    chrome.tabs.captureVisibleTab(null, {
+        format: 'jpeg',
+        quality: 100
+    }, function (data) {
+        screenshot.data = data;
+        if (callback && typeof callback == 'function') {
+            return callback(data);
+        }
+    });
+}
 
 // post message to tab
-function postMessage(action, address) {
+function postMessage(data) {
     chrome.tabs.query({
         active: true,
         windowId: chrome.windows.WINDOW_ID_CURRENT
@@ -30,10 +45,7 @@ function postMessage(action, address) {
         var port = chrome.tabs.connect(tab[0].id, {
             name: 'taoHai_buyer_helper'
         });
-        port.postMessage({
-            action: action,
-            address: address
-        });
+        port.postMessage(data);
     });
 }
 
