@@ -2,9 +2,9 @@ var storage = chrome.storage.local,
     screenshot = {};
 
 // page init
-chrome.runtime.onConnect.addListener(function (port) {
+chrome.extension.onConnect.addListener(function (port) {
     port.onMessage.addListener(function (msg) {
-        if (msg.action == 'init') {
+        if (msg.action == 'init-form-data') {
             storage.set({
                 'address': msg.address
             });
@@ -12,7 +12,8 @@ chrome.runtime.onConnect.addListener(function (port) {
     });
 });
 
-function init() {
+// 填充表单
+function formFill() {
     var address = storage.get({
         'address': ''
     }, function (data) {
@@ -48,8 +49,3 @@ function postMessage(data) {
         port.postMessage(data);
     });
 }
-
-// 
-chrome.browserAction.onClicked.addListener(function (tab) {
-    init();
-});

@@ -5,20 +5,20 @@
 // console object for debugging
 //
 
-var log = (function() {
+var log = (function () {
     var parElt = document.getElementById('wrap'),
         logElt = document.createElement('div');
     logElt.id = 'log';
     logElt.style.display = 'block';
     parElt.appendChild(logElt);
 
-    return function() {
+    return function () {
         var a, p, results = [];
-        for (var i=0, len=arguments.length; i<len; i++) {
+        for (var i = 0, len = arguments.length; i < len; i++) {
             a = arguments[i];
             try {
                 a = JSON.stringify(a, null, 2);
-            } catch(e) {}
+            } catch (e) {}
             results.push(a);
         }
         p = document.createElement('p');
@@ -31,26 +31,35 @@ var log = (function() {
 //
 // utility methods
 //
-function $(id) { return document.getElementById(id); }
-function show(id) { $(id).style.display = 'block'; }
-function hide(id) { $(id).style.display = 'none'; }
+function $(id) {
+    return document.getElementById(id);
+}
+
+function show(id) {
+    $(id).style.display = 'block';
+}
+
+function hide(id) {
+    $(id).style.display = 'none';
+}
 
 //
 // URL Matching test - to verify we can talk to this URL
 //
 var matches = ['http://*/*', 'https://*/*', 'ftp://*/*', 'file://*/*'],
     noMatches = [/^https?:\/\/chrome.google.com\/.*$/];
+
 function testURLMatches(url) {
     // couldn't find a better way to tell if executeScript
     // wouldn't work -- so just testing against known urls
     // for now...
     var r, i;
-    for (i=noMatches.length-1; i>=0; i--) {
+    for (i = noMatches.length - 1; i >= 0; i--) {
         if (noMatches[i].test(url)) {
             return false;
         }
     }
-    for (i=matches.length-1; i>=0; i--) {
+    for (i = matches.length - 1; i >= 0; i--) {
         r = new RegExp('^' + matches[i].replace(/\*/g, '.*') + '$');
         if (r.test(url)) {
             return true;
@@ -67,14 +76,16 @@ var screenshot, contentURL = '';
 function sendScrollMessage(tab) {
     contentURL = tab.url;
     screenshot = {};
-    chrome.tabs.sendRequest(tab.id, {msg: 'scrollPage'}, function() {
+    chrome.tabs.sendRequest(tab.id, {
+        msg: 'scrollPage'
+    }, function () {
         // We're done taking snapshots of all parts of the window. Display
         // the resulting full screenshot image in a new browser tab.
         openPage();
     });
 }
 
-chrome.extension.onRequest.addListener(function(request, sender, callback) {
+chrome.extension.onRequest.addListener(function (request, sender, callback) {
     if (request.msg === 'capturePage') {
         capturePage(request, sender, callback);
     } else {
@@ -117,10 +128,14 @@ function capturePage(data, sender, callback) {
     }
 
     chrome.tabs.captureVisibleTab(
-        null, {format: 'png', quality: 100}, function(dataURI) {
+        null, {
+            format: 'png',
+            quality: 100
+        },
+        function (dataURI) {
             if (dataURI) {
                 var image = new Image();
-                image.onload = function() {
+                image.onload = function () {
                     screenshot.ctx.drawImage(image, data.x, data.y);
                     callback(true);
                 };
@@ -150,7 +165,9 @@ function openPage() {
     }
 
     // create a blob for writing to a file
-    var blob = new Blob([ab], {type: mimeString});
+    var blob = new Blob([ab], {
+        type: mimeString
+    });
 
     // come up with a filename
     var name = contentURL.split('?')[0].split('#')[0];
@@ -177,9 +194,11 @@ function openPage() {
     }
 
     // create a blob for writing to a file
-    window.webkitRequestFileSystem(TEMPORARY, 1024*1024, function(fs){
-        fs.root.getFile(name, {create:true}, function(fileEntry) {
-            fileEntry.createWriter(function(fileWriter) {
+    window.webkitRequestFileSystem(TEMPORARY, 1024 * 1024, function (fs) {
+        fs.root.getFile(name, {
+            create: true
+        }, function (fileEntry) {
+            fileEntry.createWriter(function (fileWriter) {
                 fileWriter.onwriteend = onwriteend;
                 fileWriter.write(blob);
             }, errorHandler);
@@ -191,18 +210,20 @@ function openPage() {
 // start doing stuff immediately! - including error cases
 //
 
-chrome.tabs.getSelected(null, function(tab) {
+chrome.tabs.getSelected(null, function (tab) {
 
     if (testURLMatches(tab.url)) {
         var loaded = false;
 
-        chrome.tabs.executeScript(tab.id, {file: 'page.js'}, function() {
+        chrome.tabs.executeScript(tab.id, {
+            file: 'page.js'
+        }, function () {
             loaded = true;
             show('loading');
             sendScrollMessage(tab);
         });
 
-        window.setTimeout(function() {
+        window.setTimeout(function () {
             if (!loaded) {
                 show('uh-oh');
             }

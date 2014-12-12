@@ -6,10 +6,12 @@ function onMessage(request, sender, callback) {
     }
 }
 
+// 监听request事件
 if (!window.hasScreenCapturePage) {
     window.hasScreenCapturePage = true;
     chrome.extension.onRequest.addListener(onMessage);
 }
+
 
 function max(nums) {
     return Math.max.apply(Math, nums.filter(function (x) {
@@ -33,11 +35,17 @@ function getPositions(callback) {
             document.body.offsetHeight,
             document.documentElement.offsetHeight
         ],
+        // 最大宽度
         fullWidth = max(widths),
+        // 页面内容高度
         fullHeight = max(heights),
+        // 可视区域宽度
         windowWidth = window.innerWidth,
+        // 可是区域高度
         windowHeight = window.innerHeight,
+        // 原始的滚动X轴位置
         originalX = window.scrollX,
+        // 原始的Y轴滚动位置
         originalY = window.scrollY,
         originalOverflowStyle = document.documentElement.style.overflow,
         arrangements = [],
@@ -113,19 +121,15 @@ function getPositions(callback) {
         window.setTimeout(function () {
             // In case the below callback never returns, cleanup
             var cleanUpTimeout = window.setTimeout(cleanUp, 1250);
-
             chrome.extension.sendRequest(data, function (captured) {
                 window.clearTimeout(cleanUpTimeout);
                 if (captured) {
                     // Move on to capture next arrangement.
                     processArrangements();
                 } else {
-                    // If there's an error in popup.js, the response value can be
-                    // undefined, so cleanup
                     cleanUp();
                 }
             });
-
         }, 150);
     })();
 }

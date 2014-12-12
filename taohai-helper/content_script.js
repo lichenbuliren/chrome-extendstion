@@ -1,5 +1,5 @@
 // init, get item list from background
-var port = chrome.runtime.connect({
+var port = chrome.extension.connect({
     name: 'taoHai_buyer_helper'
 });
 
@@ -7,13 +7,13 @@ var address = {}
 if ($('#taohai-address-info').length > 0) {
     address = JSON.parse($('#taohai-address-info').val());
     port.postMessage({
-        action: 'init',
+        action: 'init-form-data',
         address: address
     });
 }
 
 // get message from background
-chrome.runtime.onConnect.addListener(function (port) {
+chrome.extension.onConnect.addListener(function (port) {
     port.onMessage.addListener(function (msg) {
         if (msg.action == 'append') {
             var address = msg.address;
