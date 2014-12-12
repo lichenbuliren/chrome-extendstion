@@ -12,7 +12,7 @@ $(function () {
             // We're done taking snapshots of all parts of the window. Display
             // the resulting full screenshot image in a new browser tab.
             var dataURI = screenshot.canvas.toDataURL();
-            ajax_upload(dataURI);
+            ajax_upload(dataURI, storeOrderInfo);
         });
     }
 
@@ -84,7 +84,12 @@ $(function () {
         });
     });
 
-    function ajax_upload(data) {
+    $('.order-fill').on('click', function () {
+        background.orderFill();
+    });
+
+    // 又拍云图片上传
+    function ajax_upload(data, callback) {
         $.ajax({
             type: 'POST',
             url: 'http://tools.hai0.com/api/upload',
@@ -92,8 +97,24 @@ $(function () {
                 base64Data: data
             },
             success: function (result) {
-                console.log(result);
+                if (result.code == 1) {
+                    callback(result.url);
+                } else {
+                    alert('截取图片上传失败，请重试！');
+                }
             }
-        })
+        });
+    }
+
+    // 记录order info
+    function storeOrderInfo(url) {
+        chrome.tabs.getSelected(null, function (tab) {
+            chrome.tabs.sendRequest(tab.id, {
+                msg: 'storeOrderInfo'
+            }, function (order) {
+                order.url = url;
+                background.storeOrderInfo(order);
+            });
+        });
     }
 });

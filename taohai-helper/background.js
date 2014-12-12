@@ -1,5 +1,4 @@
-var storage = chrome.storage.local,
-    screenshot = {};
+var storage = chrome.storage.local;
 
 // page init
 chrome.extension.onConnect.addListener(function (port) {
@@ -7,6 +6,10 @@ chrome.extension.onConnect.addListener(function (port) {
         if (msg.action == 'init-form-data') {
             storage.set({
                 'address': msg.address
+            });
+        } else if (msg.action == 'storeOrderInfo') {
+            storage.set({
+                'order': msg.order
             });
         }
     });
@@ -23,6 +26,19 @@ function formFill() {
         });
     });
 }
+
+// 填充orderInfo
+function orderFill() {
+    var order = storage.get({
+        'order': ''
+    }, function (data) {
+        postMessage({
+            action: 'append_order',
+            order: data.order
+        });
+    });
+}
+
 
 // 截图函数
 function capture(callback) {
