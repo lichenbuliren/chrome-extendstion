@@ -2,20 +2,6 @@ $(function () {
     var background = chrome.extension.getBackgroundPage();
     var screenshot, contentURL = '';
 
-    // 发送滚动请求
-    function sendScrollMessage(tab) {
-        contentURL = tab.url;
-        screenshot = {};
-        chrome.tabs.sendRequest(tab.id, {
-            msg: 'scrollPage'
-        }, function () {
-            // We're done taking snapshots of all parts of the window. Display
-            // the resulting full screenshot image in a new browser tab.
-            var dataURI = screenshot.canvas.toDataURL();
-            ajax_upload(dataURI, storeOrderInfo);
-        });
-    }
-
     chrome.extension.onRequest.addListener(function (request, sender, callback) {
         if (request.msg === 'capturePage') {
             capturePage(request, sender, callback);
@@ -24,6 +10,68 @@ $(function () {
         }
     });
 
+    // 填充表单
+    $('#form-fill').on('click', function () {
+        background.formFill();
+    });
+
+    $('#order-fill').on('click', function () {
+        background.orderFill();
+    });
+
+    $('#screen-shot').on('click', function () {
+        chrome.tabs.getSelected(null, function (tab) {
+            sendScrollMessage(tab, storeOrderInfo);
+        });
+    });
+
+    // 发送滚动请求
+    function sendScrollMessage(tab, callback) {
+        contentURL = tab.url;
+        screenshot = {};
+        chrome.tabs.sendRequest(tab.id, {
+            msg: 'scrollPage'
+        }, function () {
+            var dataURI = screenshot.canvas.toDataURL();
+            if (callback && typeof callback == 'function') {
+                ajax_upload(dataURI, callback);
+            }
+        });
+    }
+
+    // 又拍云图片上传
+    function ajax_upload(data, callback) {
+        $.ajax({
+            type: 'POST',
+            url: 'http://tools.hai0.com/api/upload',
+            data: {
+                base64Data: data
+            },
+            success: function (result) {
+                if (result.code == 1) {
+                    if (callback && typeof callback == 'function') {
+                        callback(result.url);
+                    }
+                } else {
+                    alert('截取图片上传失败，请重试！');
+                }
+            }
+        });
+    }
+
+    // 记录order info
+    function storeOrderInfo(url) {
+        chrome.tabs.getSelected(null, function (tab) {
+            chrome.tabs.sendRequest(tab.id, {
+                msg: 'store-order-info',
+                url: url
+            }, function (order) {
+                console.log(order);
+            });
+        });
+    }
+
+    // 截屏主体函数
     function capturePage(data, sender, callback) {
         var canvas;
 
@@ -55,8 +103,8 @@ $(function () {
         }
 
         chrome.tabs.captureVisibleTab(null, {
-            format: 'png',
-            quality: 100
+            format: 'jpeg',
+            quality: 60
         }, function (dataURI) {
             if (dataURI) {
                 var image = new Image();
@@ -66,55 +114,6 @@ $(function () {
                 };
                 image.src = dataURI;
             }
-        });
-    }
-
-    // 填充表单
-    $('#form-fill').on('click', function () {
-        background.formFill();
-    });
-
-    $('#screen-shot').on('click', function () {
-        chrome.tabs.getSelected(null, function (tab) {
-            chrome.tabs.executeScript(tab.id, {
-                file: 'page.js'
-            }, function () {
-                sendScrollMessage(tab);
-            });
-        });
-    });
-
-    $('.order-fill').on('click', function () {
-        background.orderFill();
-    });
-
-    // 又拍云图片上传
-    function ajax_upload(data, callback) {
-        $.ajax({
-            type: 'POST',
-            url: 'http://tools.hai0.com/api/upload',
-            data: {
-                base64Data: data
-            },
-            success: function (result) {
-                if (result.code == 1) {
-                    callback(result.url);
-                } else {
-                    alert('截取图片上传失败，请重试！');
-                }
-            }
-        });
-    }
-
-    // 记录order info
-    function storeOrderInfo(url) {
-        chrome.tabs.getSelected(null, function (tab) {
-            chrome.tabs.sendRequest(tab.id, {
-                msg: 'storeOrderInfo'
-            }, function (order) {
-                order.url = url;
-                background.storeOrderInfo(order);
-            });
         });
     }
 });

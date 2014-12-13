@@ -7,7 +7,7 @@ chrome.extension.onConnect.addListener(function (port) {
             storage.set({
                 'address': msg.address
             });
-        } else if (msg.action == 'storeOrderInfo') {
+        } else if (msg.action == 'store-order-info') {
             storage.set({
                 'order': msg.order
             });
@@ -32,24 +32,11 @@ function orderFill() {
     var order = storage.get({
         'order': ''
     }, function (data) {
+        console.dir(data);
         postMessage({
             action: 'append_order',
             order: data.order
         });
-    });
-}
-
-
-// 截图函数
-function capture(callback) {
-    chrome.tabs.captureVisibleTab(null, {
-        format: 'jpeg',
-        quality: 100
-    }, function (data) {
-        screenshot.data = data;
-        if (callback && typeof callback == 'function') {
-            return callback(data);
-        }
     });
 }
 
@@ -64,4 +51,10 @@ function postMessage(data) {
         });
         port.postMessage(data);
     });
+}
+
+function max(nums) {
+    return Math.max.apply(Math, nums.filter(function (x) {
+        return x;
+    }));
 }
