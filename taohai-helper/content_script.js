@@ -12,6 +12,7 @@ if ($('#taohai-address-info').length > 0) {
     });
 }
 
+
 // get message from background
 chrome.extension.onConnect.addListener(function (port) {
     port.onMessage.addListener(function (msg) {
@@ -21,8 +22,6 @@ chrome.extension.onConnect.addListener(function (port) {
                 $('#' + key).val(address[key]);
             }
         } else if (msg.action == 'append_order') {
-            console.log('received append_order msg');
-            console.log(msg.order);
             var order = msg.order;
             // TODO 填充对应的订单表单
             $('.order-list .order-no').each(function () {
@@ -49,16 +48,17 @@ chrome.extension.onConnect.addListener(function (port) {
 
 chrome.extension.onRequest.addListener(function (request, sender, callback) {
     if (request.msg == 'scrollPage') {
-        getPositions(callback);
+        _html2canvas(callback);
     } else if (request.msg === 'store-order-info') {
-        var account = $.trim($('.a-icon a-icon-text-separator').text().split('#')[1]),
-            order_no = $.trim($('#nav-signin-text').text()),
+        var order_no = $.trim($('.a-column.a-span7.a-spacing-top-mini').text().split('#')[1]),
+            account = $.trim($('#nav-signin-text').text()),
             url = request.url;
         var order = {
             'account': account,
             'order_no': order_no,
             'url': url
         }
+        console.log(order);
         port.postMessage({
             'action': 'store-order-info',
             'order': order
@@ -76,6 +76,15 @@ function max(nums) {
     return Math.max.apply(Math, nums.filter(function (x) {
         return x;
     }));
+}
+
+function _html2canvas(callback) {
+    html2canvas($('#orderDetails'), {
+        onrendered: function (canvas) {
+            console.log(canvas.toDataURL("image/png"));
+            callback(canvas.toDataURL("image/png"));
+        }
+    });
 }
 
 function getPositions(callback) {

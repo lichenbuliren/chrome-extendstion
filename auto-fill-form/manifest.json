@@ -1,12 +1,11 @@
 {
-    "name": "TaoHai Buyer Helper",
+    "name": "auto fill form",
     "version": "1.2",
     "permissions": [
         "tabs",
         "storage",
         "http://*/*",
-        "https://*/*",
-        "activeTab"
+        "https://*/*"
     ],
     "background": {
         "scripts": ["jquery.js", "background.js"]
@@ -15,15 +14,14 @@
         "default_icon": {
             "19": "images/icon19.png",
             "38": "images/icon38.png"
-        },
-        "default_popup": "popup.html"
+        }
     },
     "content_scripts": [{
         "matches": [
             "http://*/*",
             "https://*/*"
         ],
-        "js": ["jquery.js", "html2canvas.js", "content_script.js"],
+        "js": ["jquery.js", "content_script.js"],
         "run_at": "document_end"
     }],
     "icons": {

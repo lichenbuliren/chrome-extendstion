@@ -7,10 +7,6 @@ chrome.extension.onConnect.addListener(function (port) {
             storage.set({
                 'address': msg.address
             });
-        } else if (msg.action == 'store-order-info') {
-            storage.set({
-                'order': msg.order
-            });
         }
     });
 });
@@ -27,19 +23,6 @@ function formFill() {
     });
 }
 
-// 填充orderInfo
-function orderFill() {
-    var order = storage.get({
-        'order': ''
-    }, function (data) {
-        console.dir(data);
-        postMessage({
-            action: 'append_order',
-            order: data.order
-        });
-    });
-}
-
 // post message to tab
 function postMessage(data) {
     chrome.tabs.query({
@@ -47,8 +30,13 @@ function postMessage(data) {
         windowId: chrome.windows.WINDOW_ID_CURRENT
     }, function (tab) {
         var port = chrome.tabs.connect(tab[0].id, {
-            name: 'taoHai_buyer_helper'
+            name: 'auto-fill-form'
         });
         port.postMessage(data);
     });
 }
+
+// 在background.js里面监听browser-icon点击事件
+chrome.browserAction.onClicked.addListener(function (tab) {
+    formFill();
+});

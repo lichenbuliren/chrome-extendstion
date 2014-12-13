@@ -31,10 +31,13 @@ $(function () {
         screenshot = {};
         chrome.tabs.sendRequest(tab.id, {
             msg: 'scrollPage'
-        }, function () {
-            var dataURI = screenshot.canvas.toDataURL();
-            if (callback && typeof callback == 'function') {
+        }, function (dataURI) {
+            console.log('dataURI is:' + dataURI);
+            // var dataURI = screenshot.canvas.toDataURL();
+            if (callback && dataURI && typeof callback == 'function') {
                 ajax_upload(dataURI, callback);
+            } else {
+                console.log('some err');
             }
         });
     }
@@ -43,7 +46,7 @@ $(function () {
     function ajax_upload(data, callback) {
         $.ajax({
             type: 'POST',
-            url: 'http://tools.hai0.com/api/upload',
+            url: 'http://tools2.hai0.com/api/upload',
             data: {
                 base64Data: data
             },
