@@ -2,6 +2,6 @@
 *.pem
 *.zip
 .DS_Store
-.doc
-.docx
+*.doc
+*.docx
 
