@@ -2,14 +2,6 @@ $(function () {
     var background = chrome.extension.getBackgroundPage();
     var screenshot, contentURL = '';
 
-    chrome.extension.onRequest.addListener(function (request, sender, callback) {
-        if (request.msg === 'capturePage') {
-            capturePage(request, sender, callback);
-        } else {
-            console.error('Unknown message received from content script: ' + request.msg);
-        }
-    });
-
     // 填充表单
     $('#form-fill').on('click', function () {
         background.formFill();
@@ -21,23 +13,24 @@ $(function () {
 
     $('#screen-shot').on('click', function () {
         chrome.tabs.getSelected(null, function (tab) {
-            sendScrollMessage(tab, storeOrderInfo);
+            sendCaptureMessage(tab, storeOrderInfo);
         });
     });
 
     // 发送滚动请求
-    function sendScrollMessage(tab, callback) {
+    function sendCaptureMessage(tab, callback) {
         contentURL = tab.url;
         screenshot = {};
         chrome.tabs.sendRequest(tab.id, {
-            msg: 'scrollPage'
-        }, function (dataURI) {
-            console.log('dataURI is:' + dataURI);
+            msg: 'capturePage'
+        }, function (err, dataURI) {
+            if (err) {
+                console.error(err);
+                return false;
+            }
             // var dataURI = screenshot.canvas.toDataURL();
             if (callback && dataURI && typeof callback == 'function') {
                 ajax_upload(dataURI, callback);
-            } else {
-                console.log('some err');
             }
         });
     }
@@ -57,7 +50,12 @@ $(function () {
                     }
                 } else {
                     alert('截取图片上传失败，请重试！');
+                    return false;
                 }
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                console.log(textStatus);
+                return false;
             }
         });
     }

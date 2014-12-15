@@ -47,7 +47,7 @@ chrome.extension.onConnect.addListener(function (port) {
 });
 
 chrome.extension.onRequest.addListener(function (request, sender, callback) {
-    if (request.msg == 'scrollPage') {
+    if (request.msg == 'capturePage') {
         _html2canvas(callback);
     } else if (request.msg === 'store-order-info') {
         var order_no = $.trim($('.a-column.a-span7.a-spacing-top-mini').text().split('#')[1]),
@@ -58,7 +58,6 @@ chrome.extension.onRequest.addListener(function (request, sender, callback) {
             'order_no': order_no,
             'url': url
         }
-        console.log(order);
         port.postMessage({
             'action': 'store-order-info',
             'order': order
@@ -71,20 +70,22 @@ chrome.extension.onRequest.addListener(function (request, sender, callback) {
     }
 });
 
+function _html2canvas(callback) {
+    if ($('#orderDetails').length > 0) {
+        html2canvas($('#orderDetails'), {
+            onrendered: function (canvas) {
+                callback(null, canvas.toDataURL('image/png'));
+            }
+        });
+    } else {
+        callback('captured dom documentElement is not exist');
+    }
+}
 
 function max(nums) {
     return Math.max.apply(Math, nums.filter(function (x) {
         return x;
     }));
-}
-
-function _html2canvas(callback) {
-    html2canvas($('#orderDetails'), {
-        onrendered: function (canvas) {
-            console.log(canvas.toDataURL("image/png"));
-            callback(canvas.toDataURL("image/png"));
-        }
-    });
 }
 
 function getPositions(callback) {
