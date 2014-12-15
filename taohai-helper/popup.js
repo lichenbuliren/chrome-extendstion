@@ -23,14 +23,13 @@ $(function () {
         screenshot = {};
         chrome.tabs.sendRequest(tab.id, {
             msg: 'capturePage'
-        }, function (err, dataURI) {
-            if (err) {
-                console.error(err);
-                return false;
-            }
-            // var dataURI = screenshot.canvas.toDataURL();
-            if (callback && dataURI && typeof callback == 'function') {
-                ajax_upload(dataURI, callback);
+        }, function (dataURI) {
+            if (dataURI) {
+                if (callback && typeof callback == 'function') {
+                    ajax_upload(dataURI, callback);
+                }
+            } else {
+                console.error('dataURI is error');
             }
         });
     }
@@ -69,52 +68,6 @@ $(function () {
             }, function (order) {
                 console.log(order);
             });
-        });
-    }
-
-    // 截屏主体函数
-    function capturePage(data, sender, callback) {
-        var canvas;
-
-        // Get window.devicePixelRatio from the page, not the popup
-        var scale = data.devicePixelRatio && data.devicePixelRatio !== 1 ? 1 / data.devicePixelRatio : 1;
-
-        if (!screenshot.canvas) {
-            canvas = document.createElement('canvas');
-            canvas.width = data.totalWidth;
-            canvas.height = data.totalHeight;
-            screenshot.canvas = canvas;
-            screenshot.ctx = canvas.getContext('2d');
-
-            // Scale to account for device pixel ratios greater than one. (On a
-            // MacBook Pro with Retina display, window.devicePixelRatio = 2.)
-            if (scale !== 1) {
-                // TODO - create option to not scale? It's not clear if it's
-                // better to scale down the image or to just draw it twice
-                // as large.
-                screenshot.ctx.scale(scale, scale);
-            }
-        }
-
-        // if the canvas is scaled, then x- and y-positions have to make
-        // up for it in the opposite direction
-        if (scale !== 1) {
-            data.x = data.x / scale;
-            data.y = data.y / scale;
-        }
-
-        chrome.tabs.captureVisibleTab(null, {
-            format: 'jpeg',
-            quality: 60
-        }, function (dataURI) {
-            if (dataURI) {
-                var image = new Image();
-                image.onload = function () {
-                    screenshot.ctx.drawImage(image, data.x, data.y);
-                    callback(true);
-                };
-                image.src = dataURI;
-            }
         });
     }
 });

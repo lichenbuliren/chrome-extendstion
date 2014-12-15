@@ -74,11 +74,11 @@ function _html2canvas(callback) {
     if ($('#orderDetails').length > 0) {
         html2canvas($('#orderDetails'), {
             onrendered: function (canvas) {
-                callback(null, canvas.toDataURL('image/png'));
+                callback(canvas.toDataURL('image/png'));
             }
         });
     } else {
-        callback('captured dom documentElement is not exist');
+        callback(null);
     }
 }
 
