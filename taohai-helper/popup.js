@@ -16,6 +16,7 @@ $(function() {
         chrome.tabs.getSelected(null, function(tab) {
             sendScrollMessage(tab, function(dataURI) {
                 ajax_upload(dataURI, function(url) {
+                    console.log(dataURI);
                     storeOrderInfo(url, function(order) {
                         console.log(order);
                         $('.loading').hide();
@@ -55,7 +56,7 @@ $(function() {
     function ajax_upload(data, callback) {
         $.ajax({
             type: 'POST',
-            url: 'http://127.0.0.1:3000/api/upload',
+            url: 'http://tools2.hai0.com:3000/api/upload',
             data: {
                 base64Data: data
             },
