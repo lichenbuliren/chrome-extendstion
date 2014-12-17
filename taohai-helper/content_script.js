@@ -14,8 +14,8 @@ if ($('#taohai-address-info').length > 0) {
 
 
 // get message from background
-chrome.extension.onConnect.addListener(function (port) {
-    port.onMessage.addListener(function (msg) {
+chrome.extension.onConnect.addListener(function(port) {
+    port.onMessage.addListener(function(msg) {
         if (msg.action == 'append') {
             var address = msg.address;
             for (var key in address) {
@@ -24,19 +24,19 @@ chrome.extension.onConnect.addListener(function (port) {
         } else if (msg.action == 'append_order') {
             var order = msg.order;
             // TODO 填充对应的订单表单
-            $('.order-list .order-no').each(function () {
+            $('.order-list .order-no').each(function() {
                 if ($(this).val() == '') {
                     $(this).val(order.order_no);
                 }
             });
 
-            $('.order-list .account').each(function () {
+            $('.order-list .account').each(function() {
                 if ($(this).val() == '') {
                     $(this).val(order.account);
                 }
             });
 
-            $('.lnk-thumbnail').each(function () {
+            $('.lnk-thumbnail').each(function() {
                 var url = order.url;
                 if ($(this).attr('href') == '') {
                     $(this).attr('href', url).children('.img-thumbnail').attr('src', url).show();
@@ -46,9 +46,16 @@ chrome.extension.onConnect.addListener(function (port) {
     });
 });
 
-chrome.extension.onRequest.addListener(function (request, sender, callback) {
+chrome.extension.onRequest.addListener(function(request, sender, callback) {
     if (request.msg == 'capturePage') {
-        _html2canvas(callback);
+        var imgObj = request.imgObj;
+        // TODO  replace img src
+        // _replaceLocalImg(imgObj, function () {
+        //     console.log('replaced images');
+        //     _html2canvas(callback);
+        // });
+        getPositions(callback);
+
     } else if (request.msg === 'store-order-info') {
         var order_no = $.trim($('.a-column.a-span7.a-spacing-top-mini').text().split('#')[1]),
             account = $.trim($('#nav-signin-text').text()),
@@ -65,6 +72,17 @@ chrome.extension.onRequest.addListener(function (request, sender, callback) {
         if (callback && typeof callback == 'function') {
             callback(order);
         }
+    } else if (request.msg == 'replaceHttpsImg') {
+        var imgStr = '';
+        var count = $('.yo-critical-feature').length;
+        $('.yo-critical-feature').each(function(index) {
+            var _split = (index == (count - 1)) ? '' : ',';
+            imgStr += $(this).attr('src') + _split;
+        });
+        if (callback && typeof callback == 'function') {
+            callback(imgStr);
+        }
+        // _replaceHttpsImg(imgStr, callback);
     } else {
         console.error('Unknown message received from background: ' + request.msg);
     }
@@ -73,7 +91,8 @@ chrome.extension.onRequest.addListener(function (request, sender, callback) {
 function _html2canvas(callback) {
     if ($('#orderDetails').length > 0) {
         html2canvas($('#orderDetails'), {
-            onrendered: function (canvas) {
+            useCORS: true,
+            onrendered: function(canvas) {
                 callback(canvas.toDataURL('image/png'));
             }
         });
@@ -82,8 +101,21 @@ function _html2canvas(callback) {
     }
 }
 
+// 替换客户端图片src
+function _replaceLocalImg(imgObj, callback) {
+    $('.yo-critical-feature').each(function(index) {
+        var _src = $(this).attr('src');
+        var newSrc = imgObj[_src];
+        $(this).after('<img src="' + newSrc + '">');
+        $(this).remove();
+    });
+    if (callback && typeof callback == 'function') {
+        callback();
+    }
+}
+
 function max(nums) {
-    return Math.max.apply(Math, nums.filter(function (x) {
+    return Math.max.apply(Math, nums.filter(function(x) {
         return x;
     }));
 }
@@ -178,10 +210,10 @@ function getPositions(callback) {
         };
 
         // Need to wait for things to settle
-        window.setTimeout(function () {
+        window.setTimeout(function() {
             // In case the below callback never returns, cleanup
             var cleanUpTimeout = window.setTimeout(cleanUp, 1250);
-            chrome.extension.sendRequest(data, function (captured) {
+            chrome.extension.sendRequest(data, function(captured) {
                 window.clearTimeout(cleanUpTimeout);
                 if (captured) {
                     // Move on to capture next arrangement.

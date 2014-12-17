@@ -2203,7 +2203,7 @@
             count = 0,
             element = options.elements[0] || document.body,
             doc = element.ownerDocument,
-            domImages = element.getElementsByTagName('img'), // Fetch images of the present element only
+            domImages = element.getElementsByTagName('img'), // Fetch images of the present element only  
             imgLen = domImages.length,
             link = doc.createElement("a"),
             supportCORS = (function (img) {
