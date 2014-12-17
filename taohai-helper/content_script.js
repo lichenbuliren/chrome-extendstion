@@ -47,16 +47,9 @@ chrome.extension.onConnect.addListener(function(port) {
 });
 
 chrome.extension.onRequest.addListener(function(request, sender, callback) {
-    if (request.msg == 'capturePage') {
-        var imgObj = request.imgObj;
-        // TODO  replace img src
-        // _replaceLocalImg(imgObj, function () {
-        //     console.log('replaced images');
-        //     _html2canvas(callback);
-        // });
+    if (request.msg == 'scrollPage') {
         getPositions(callback);
-
-    } else if (request.msg === 'store-order-info') {
+    } else if (request.msg == 'store-order-info') {
         var order_no = $.trim($('.a-column.a-span7.a-spacing-top-mini').text().split('#')[1]),
             account = $.trim($('#nav-signin-text').text()),
             url = request.url;
@@ -72,47 +65,10 @@ chrome.extension.onRequest.addListener(function(request, sender, callback) {
         if (callback && typeof callback == 'function') {
             callback(order);
         }
-    } else if (request.msg == 'replaceHttpsImg') {
-        var imgStr = '';
-        var count = $('.yo-critical-feature').length;
-        $('.yo-critical-feature').each(function(index) {
-            var _split = (index == (count - 1)) ? '' : ',';
-            imgStr += $(this).attr('src') + _split;
-        });
-        if (callback && typeof callback == 'function') {
-            callback(imgStr);
-        }
-        // _replaceHttpsImg(imgStr, callback);
     } else {
         console.error('Unknown message received from background: ' + request.msg);
     }
 });
-
-function _html2canvas(callback) {
-    if ($('#orderDetails').length > 0) {
-        html2canvas($('#orderDetails'), {
-            useCORS: true,
-            onrendered: function(canvas) {
-                callback(canvas.toDataURL('image/png'));
-            }
-        });
-    } else {
-        callback(null);
-    }
-}
-
-// 替换客户端图片src
-function _replaceLocalImg(imgObj, callback) {
-    $('.yo-critical-feature').each(function(index) {
-        var _src = $(this).attr('src');
-        var newSrc = imgObj[_src];
-        $(this).after('<img src="' + newSrc + '">');
-        $(this).remove();
-    });
-    if (callback && typeof callback == 'function') {
-        callback();
-    }
-}
 
 function max(nums) {
     return Math.max.apply(Math, nums.filter(function(x) {
