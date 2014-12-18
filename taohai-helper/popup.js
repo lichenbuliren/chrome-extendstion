@@ -56,7 +56,7 @@ $(function() {
     function ajax_upload(data, callback) {
         $.ajax({
             type: 'POST',
-            url: 'http://tools2.hai0.com:3000/api/upload',
+            url: 'http://tools2.hai0.com/api/upload',
             data: {
                 base64Data: data
             },
